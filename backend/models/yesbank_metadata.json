@@ -1,0 +1,30 @@
+{
+  "company": "yesbank",
+  "trained_at": "2026-07-03T20:55:57.012082",
+  "rows_trained_on": 736,
+  "walk_forward_f1": 0.3281,
+  "feature_columns": [
+    "open",
+    "rsi",
+    "macd",
+    "macd_signal",
+    "macd_histogram",
+    "ema_20",
+    "ema_50",
+    "ema_200",
+    "atr",
+    "atr_pct",
+    "volume_ratio",
+    "trend_score",
+    "price_vs_ema20",
+    "nifty_trend_enc",
+    "banknifty_trend_enc",
+    "sensex_trend_enc",
+    "sentiment_score",
+    "impact_score",
+    "relevance_score",
+    "news_count",
+    "dominant_event_enc",
+    "trigger_count"
+  ]
+}

@@ -1,0 +1,33 @@
+# ============================================================
+# MarketDrive AI — Production Dependencies
+# ============================================================
+
+# Financial & Data Analysis
+yfinance>=0.2.50
+pandas>=2.2.0
+pandas-ta>=0.3.14b0
+numpy>=1.26.0
+
+# Machine Learning & Explainability
+xgboost>=2.1.0
+shap>=0.46.0
+scikit-learn>=1.5.0
+joblib>=1.4.0
+
+# NLP, Embeddings & Vector Search
+sentence-transformers>=3.0.0
+faiss-cpu>=1.8.0
+
+# Agent Orchestration & AI
+langgraph>=0.2.20
+langchain>=0.3.0
+langchain-groq>=0.2.0
+groq>=0.11.0
+requests>=2.32.0
+
+# Web Framework & Utilities
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
+apscheduler>=3.10.0
+pytz>=2024.1

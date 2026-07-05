@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg:      #ffffff;
+  --bg2:     #fafafa;
+  --bg3:     #f5f5f5;
+  --border:  #e8e8e8;
+  --border2: #f0f0f0;
+  --text:    #000000;
+  --text2:   #444444;
+  --text3:   #999999;
+  --green:   #000000;
+  --red:     #888888;
+  --amber:   #555555;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+}
+
+#root {
+  min-height: 100%;
+  width: 100%;
+  background: #fff;
+  max-width: 100%;
+  text-align: left;
+  border: none;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #000;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* scrollbar */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+/* signal pills */
+.sig-pill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 5px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: inline-block;
+}
+.bull { background: #000; color: #fff; }
+.bear { background: #f0f0f0; color: #333; }
+.neut { background: #f5f5f5; color: #555; }
+
+/* section card */
+.section-card {
+  background: #fafafa;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.section-head {
+  padding: 12px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title {
+  font-size: 9px;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+}
+.section-body { padding: 16px 18px; }
+
+/* stock card hover */
+.stock-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10) !important;
+  transform: translateY(-3px) !important;
+}
