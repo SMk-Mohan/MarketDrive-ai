@@ -453,9 +453,15 @@ def rag_agent_node(state: GraphState) -> GraphState:
         )
     except Exception as e:
         logger.error(f"  [RAG Agent] Explanation error: {e}")
-        state["rag_explanation"] = pred.get(
-            "reason", 
-            f"{state['company_name']} Predicted {prediction}"
+        rsi   = features_for_rag.get("rsi", 50)
+        trend = features_for_rag.get("nifty_trend", "Neutral")
+        sent  = features_for_rag.get("sentiment_score", 0.0)
+        price = pred.get("current_price", 0.0)
+        state["rag_explanation"] = (
+            f"{state['company_name'].title()} is showing a {prediction} signal at ₹{price:.1f}. "
+            f"RSI stands at {rsi:.1f}, indicating {'overbought pressure' if rsi > 65 else 'oversold conditions' if rsi < 35 else 'neutral momentum'}. "
+            f"The broader market (Nifty) is trending {trend} with a sentiment score of {sent:.2f}. "
+            f"Model confidence is {confidence:.1f}%."
         )
 
     # Log prediction to market_time_report
