@@ -230,9 +230,14 @@ def predict(company_name: str, live_features: dict) -> dict:
     prediction = LABEL_NAMES[pred_class]
     confidence = round(float(probs[pred_class]) * 100, 2)
 
-    # ── Price range via ATR ───────────────────────────────────
+    # ── Price range via ATR (with safety buffer) ─────────────
     price      = float(live_features.get("close", 0.0))
     atr        = float(live_features.get("atr",   0.0))
+    
+    # If ATR is missing or zero, fallback to a 2% volatility buffer
+    if atr <= 0:
+        atr = price * 0.02
+        
     price_low  = round(price - atr * 0.5, 2)
     price_high = round(price + atr * 0.5, 2)
 
