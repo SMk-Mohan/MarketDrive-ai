@@ -249,13 +249,19 @@ export default function Detail() {
           {/* Macro Overlays */}
           <div style={{ marginTop: 'auto', borderTop: '2px solid #000', paddingTop: '24px' }}>
             <div style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', color: '#666', letterSpacing: '1.5px', marginBottom: '16px' }}>Market Breadth (Macros)</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', minHeight: '120px' }}>
                {macro.map(m => (
-                 <div key={m.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase' }}>{m.label}</span>
+                 <div key={m.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: m.value ? 1 : 0.6 }}>
+                   <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#000' }}>{m.label}</span>
                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '16px', fontWeight: '900' }}>{m.value?.toLocaleString()}</div>
-                      <div style={{ fontSize: '12px', color: m.isUp ? '#000' : '#888', fontWeight: '900' }}>{m.isUp ? '↑' : '↓'} {m.chgPct}%</div>
+                      <div style={{ fontSize: '16px', fontWeight: '900', color: '#000' }}>
+                        {m.value ? m.value.toLocaleString() : 'Loading...'}
+                      </div>
+                      {m.chgPct && (
+                        <div style={{ fontSize: '12px', color: m.isUp ? '#000' : '#666', fontWeight: '900' }}>
+                          {m.isUp ? '↑' : '↓'} {m.chgPct}%
+                        </div>
+                      )}
                    </div>
                  </div>
                ))}
