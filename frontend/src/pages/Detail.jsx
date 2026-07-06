@@ -216,7 +216,7 @@ export default function Detail() {
         </div>
 
         {/* Right Panel — Fixed Chart & Macros */}
-        <div style={{ display: 'flex', flexDirection: 'column', overflow: isMobile ? 'visible' : 'hidden', padding: '32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '32px', borderLeft: isMobile ? 'none' : '1.5px solid #f5f5f5' }}>
 
           {/* Live Chart Section */}
           <div style={{ height: '400px', flexShrink: 0, background: '#fafafa', padding: '24px', marginBottom: '24px', border: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column' }}>
