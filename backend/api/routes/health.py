@@ -26,7 +26,7 @@ router = APIRouter()
 # ── GET /health ───────────────────────────────────────────────
 @router.get("/health")
 async def health():
-    """Basic liveness check — Railway uses this for health probe."""
+    """Basic liveness check — used by deployment health probes."""
     return {
         "status":    "ok",
         "project":   PROJECT_NAME,

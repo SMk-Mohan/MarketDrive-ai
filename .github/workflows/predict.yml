@@ -1,0 +1,23 @@
+name: Scheduled Prediction Sweep
+
+on:
+  schedule:
+    # Runs at 03:45 UTC (9:15 AM IST)
+    - cron: '45 3 * * *'
+    # Runs at 05:00 UTC (10:30 AM IST)
+    - cron: '0 5 * * *'
+    # Runs at 07:00 UTC (12:30 PM IST)
+    - cron: '0 7 * * *'
+    # Runs at 10:00 UTC (3:30 PM IST)
+    - cron: '0 10 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  trigger-prediction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Backend Prediction
+        run: |
+          curl -X POST "${{ secrets.BACKEND_URL }}/predict/run-predictions" \
+          -H "Content-Type: application/json" \
+          --fail || exit 1

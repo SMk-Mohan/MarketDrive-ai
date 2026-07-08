@@ -2,7 +2,7 @@
 api/routes/prediction.py
 GET /predict/{ticker}     → run full pipeline for one stock
 GET /predict/all          → latest cached predictions for all stocks
-POST /predict/{ticker}/force → force re-run regardless of cache
+POST /predict/run-predictions → trigger full background sweep for CI
 """
 
 import logging
@@ -74,6 +74,22 @@ async def get_all(background_tasks: BackgroundTasks, refresh: bool = False):
         "count":   len(data),
         "data":    data,
         "is_refreshing": refresh or len(data) < len(VALID_TICKERS)
+    }
+
+
+# ── POST /predict/run-predictions ─────────────────────────────
+@router.post("/run-predictions")
+async def run_predictions_ci(background_tasks: BackgroundTasks):
+    """
+    Dedicated endpoint for GitHub Actions to trigger the daily sweep.
+    Returns immediately and runs logic in background.
+    """
+    logger.info("📡 [CI Trigger] Manual sweep requested via /run-predictions")
+    background_tasks.add_task(background_sweep)
+    return {
+        "status":  "accepted",
+        "message": "Background prediction sweep started for all stocks.",
+        "stocks":  VALID_TICKERS
     }
 
 

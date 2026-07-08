@@ -65,12 +65,12 @@ async def _run_training_all():
 async def trigger_training(background_tasks: BackgroundTasks):
     """
     Triggers model training for all stocks in the background.
-    Call this ONCE after a fresh deployment to Railway.
-    Training takes ~5-10 minutes. Check Railway logs for progress.
+    Call this ONCE after a fresh deployment to Oracle.
+    Training takes ~5-10 minutes. Check server logs for progress.
     """
     background_tasks.add_task(_run_training_all)
     return {
         "status": "training_started",
-        "message": "Training all 5 models in background. Check Railway logs for progress. Takes ~5-10 mins.",
+        "message": "Training all 5 models in background. Check logs for progress. Takes ~5-10 mins.",
         "stocks": ["infosys", "vodafone", "tata", "adani", "yesbank"]
     }
