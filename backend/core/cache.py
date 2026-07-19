@@ -34,6 +34,8 @@ def _persist(path: str, data: dict):
     os.makedirs(settings.CACHE_DIR, exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f, indent=2, default=str)
+    from core.db_sync import upload_file
+    upload_file(path)
 
 
 # ── prediction cache ──────────────────────────────────────────────────────────

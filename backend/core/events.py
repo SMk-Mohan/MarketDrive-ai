@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 
 async def startup():
     logger.info("MarketDrive AI starting up...")
+    from core.db_sync import download_all
+    download_all()  # Restore state from cloud DB
     init_cache()
     start_scheduler()
     logger.info("Scheduler started. Cache initialised.")

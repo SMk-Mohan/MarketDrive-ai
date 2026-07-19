@@ -135,6 +135,12 @@ def init_storage():
             json.dump(API_TRACKER_DEFAULTS, f, indent=2)
         logger.info("[RAG Agent] Created api_tracker.json")
 
+    from core.db_sync import upload_file
+    upload_file(MARKET_TIME_REPORT_PATH)
+    upload_file(GLOBAL_REPORT_PATH)
+    upload_file(TRAINING_TRACKER_PATH)
+    upload_file(API_TRACKER_PATH)
+
     logger.info("[RAG Agent] Storage initialized")
 
 
@@ -167,6 +173,9 @@ def _save_index(stock: str, index, rows: list):
     faiss.write_index(index, idx_path)
     with open(rows_path, "wb") as f:
         pickle.dump(rows, f)
+    from core.db_sync import upload_file
+    upload_file(idx_path)
+    upload_file(rows_path)
 
 
 def _row_to_text(row: dict) -> str:
@@ -224,6 +233,8 @@ def _load_api_tracker() -> dict:
 def _save_api_tracker(tracker: dict):
     with open(API_TRACKER_PATH, "w") as f:
         json.dump(tracker, f, indent=2)
+    from core.db_sync import upload_file
+    upload_file(API_TRACKER_PATH)
 
 
 def _log_api_call(service: str, calls: int = 1):
@@ -322,6 +333,8 @@ def _log_prediction(
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
     df.to_csv(MARKET_TIME_REPORT_PATH, index=False)
+    from core.db_sync import upload_file
+    upload_file(MARKET_TIME_REPORT_PATH)
     logger.info(
         f"[RAG Agent] Logged: {stock} → {prediction} "
         f"({confidence:.1f}%) trigger={trigger_reason}"
@@ -360,6 +373,8 @@ def _log_evaluation(
     df.loc[mask, "why_wrong"]        = why_wrong if not correct else ""
     df.loc[mask, "evaluated"]        = True
     df.to_csv(MARKET_TIME_REPORT_PATH, index=False)
+    from core.db_sync import upload_file
+    upload_file(MARKET_TIME_REPORT_PATH)
 
     # Embed completed row into FAISS
     _embed_and_add(stock, df[mask].iloc[0].to_dict())
@@ -394,6 +409,10 @@ def _archive_daily_report():
 
     remaining = daily_df[daily_df["evaluated"] != True]
     remaining.to_csv(MARKET_TIME_REPORT_PATH, index=False)
+
+    from core.db_sync import upload_file
+    upload_file(GLOBAL_REPORT_PATH)
+    upload_file(MARKET_TIME_REPORT_PATH)
 
     logger.info(
         f"[RAG Agent] Archived {len(evaluated)} rows | "
@@ -444,6 +463,8 @@ def _log_retraining(
     }
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     df.to_csv(TRAINING_TRACKER_PATH, index=False)
+    from core.db_sync import upload_file
+    upload_file(TRAINING_TRACKER_PATH)
     logger.info(
         f"[RAG Agent] Retraining logged: {stock} | "
         f"acc={walk_forward_accuracy:.1f}% | "
