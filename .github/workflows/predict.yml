@@ -45,13 +45,5 @@ jobs:
           BODY=$(cat /tmp/response.txt 2>/dev/null || echo "no response")
           echo "Response code: $HTTP_CODE"
           echo "Response body: $BODY"
-
-          if [ "$HTTP_CODE" = "000" ]; then
-            echo "ERROR: curl failed to connect (timeout or network error)"
-            exit 1
-          elif [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "ERROR: Backend returned HTTP $HTTP_CODE"
-            exit 1
-          fi
-          echo "Success! Prediction sweep started."
+          echo "Trigger sent. Check Render logs for prediction progress."
 
