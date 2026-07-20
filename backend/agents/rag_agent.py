@@ -15,9 +15,7 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
-import faiss
 from groq import Groq
-from sentence_transformers import SentenceTransformer
 
 from config.settings import (
     RAG_DIR,
@@ -32,14 +30,11 @@ logger = logging.getLogger(__name__)
 
 # ── Derived paths (all under RAG_DIR from settings) ──────────
 FAISS_DIR            = os.path.join(RAG_DIR, "faiss_indexes")
-EMBEDDER_DIR         = os.path.join(RAG_DIR, "embedder")
 TRAINING_TRACKER_PATH = os.path.join(RAG_DIR, "training_data_tracker.csv")
 API_TRACKER_PATH     = os.path.join(RAG_DIR, "api_tracker.json")
 
-for _d in [RAG_DIR, FAISS_DIR, EMBEDDER_DIR]:
+for _d in [RAG_DIR, FAISS_DIR]:
     os.makedirs(_d, exist_ok=True)
-
-EMBEDDING_DIM = 384   # fixed for all-MiniLM-L6-v2
 
 # ── CSV column schemas ────────────────────────────────────────
 MARKET_TIME_REPORT_COLS = [
@@ -77,21 +72,7 @@ API_TRACKER_DEFAULTS = {
 # FIX: not loaded at module level — loaded on first use only
 # ══════════════════════════════════════════════════════════════
 
-_embedder: SentenceTransformer | None = None
 _groq_client: Groq | None = None
-
-
-def _get_embedder() -> SentenceTransformer:
-    """Returns cached embedder, loads on first call."""
-    global _embedder
-    if _embedder is None:
-        logger.info("[RAG Agent] Loading sentence embedder...")
-        _embedder = SentenceTransformer(
-            "all-MiniLM-L6-v2",
-            cache_folder=EMBEDDER_DIR,
-        )
-        logger.info("[RAG Agent] Embedder ready")
-    return _embedder
 
 
 def _get_groq() -> Groq:
@@ -148,34 +129,27 @@ def init_storage():
 # FAISS INDEX MANAGER
 # ══════════════════════════════════════════════════════════════
 
-def _faiss_paths(stock: str) -> tuple[str, str]:
-    return (
-        os.path.join(FAISS_DIR, f"{stock}_faiss.index"),
-        os.path.join(FAISS_DIR, f"{stock}_rows.pkl"),
-    )
+def _rows_path(stock: str) -> str:
+    return os.path.join(FAISS_DIR, f"{stock}_rows.pkl")
 
 
-def _load_index(stock: str) -> tuple:
-    """Loads FAISS index + row list for a stock. Creates empty if missing."""
-    idx_path, rows_path = _faiss_paths(stock)
-    if os.path.exists(idx_path) and os.path.exists(rows_path):
-        index = faiss.read_index(idx_path)
-        with open(rows_path, "rb") as f:
+def _load_rows(stock: str) -> list:
+    """Loads row list for a stock. Creates empty list if missing."""
+    path = _rows_path(stock)
+    if os.path.exists(path):
+        with open(path, "rb") as f:
             rows = pickle.load(f)
     else:
-        index = faiss.IndexFlatL2(EMBEDDING_DIM)
         rows  = []
-    return index, rows
+    return rows
 
 
-def _save_index(stock: str, index, rows: list):
-    idx_path, rows_path = _faiss_paths(stock)
-    faiss.write_index(index, idx_path)
-    with open(rows_path, "wb") as f:
+def _save_rows(stock: str, rows: list):
+    path = _rows_path(stock)
+    with open(path, "wb") as f:
         pickle.dump(rows, f)
     from core.db_sync import upload_file
-    upload_file(idx_path)
-    upload_file(rows_path)
+    upload_file(path)
 
 
 def _row_to_text(row: dict) -> str:
@@ -200,14 +174,11 @@ def _row_to_text(row: dict) -> str:
 
 
 def _embed_and_add(stock: str, row: dict):
-    """Embeds a completed evaluated row and adds to FAISS index."""
-    index, rows = _load_index(stock)
-    text        = _row_to_text(row)
-    embedding   = _get_embedder().encode([text]).astype("float32")
-    index.add(embedding)
+    """Adds a completed evaluated row to the RAG database."""
+    rows = _load_rows(stock)
     rows.append(row)
-    _save_index(stock, index, rows)
-    logger.info(f"[RAG Agent] Indexed {stock} row for {row.get('date')}")
+    _save_rows(stock, rows)
+    logger.info(f"[RAG Agent] Saved {stock} row for {row.get('date')} to local history.")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -479,25 +450,44 @@ def _log_retraining(
 def _search_similar(stock: str, query_row: dict, top_k: int = 3) -> list:
     """
     Finds top_k most semantically similar past situations
-    for a given stock using FAISS vector search.
+    for a given stock using TF-IDF similarity.
     """
-    index, rows = _load_index(stock)
-    if index.ntotal == 0:
+    rows = _load_rows(stock)
+    if not rows:
         logger.info(f"[RAG Agent] No past situations indexed for {stock} yet")
         return []
 
-    query_text = _row_to_text(query_row)
-    query_vec  = _get_embedder().encode([query_text]).astype("float32")
-    k          = min(top_k, index.ntotal)
-    distances, indices = index.search(query_vec, k)
+    # If there's only 1 row, query it directly
+    if len(rows) == 1:
+        row = rows[0].copy()
+        row["similarity"] = 1.0
+        return [row]
 
-    results = []
-    for dist, idx in zip(distances[0], indices[0]):
-        if idx < len(rows):
+    try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity
+        
+        texts = [_row_to_text(r) for r in rows]
+        query_text = _row_to_text(query_row)
+
+        vectorizer = TfidfVectorizer().fit(texts + [query_text])
+        tfidf = vectorizer.transform(texts)
+        query_tfidf = vectorizer.transform([query_text])
+
+        similarities = cosine_similarity(query_tfidf, tfidf).flatten()
+
+        import numpy as np
+        top_indices = np.argsort(similarities)[::-1][:top_k]
+
+        results = []
+        for idx in top_indices:
             row = rows[idx].copy()
-            row["similarity"] = round(float(1 / (1 + dist)), 4)
+            row["similarity"] = round(float(similarities[idx]), 4)
             results.append(row)
-    return results
+        return results
+    except Exception as e:
+        logger.error(f"[RAG Agent] TF-IDF search error: {e}")
+        return [r.copy() for r in rows[:top_k]]
 
 
 # ══════════════════════════════════════════════════════════════

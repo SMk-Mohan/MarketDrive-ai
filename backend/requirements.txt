@@ -14,9 +14,7 @@ shap>=0.46.0
 scikit-learn>=1.5.0
 joblib>=1.4.0
 
-# NLP, Embeddings & Vector Search
-sentence-transformers>=3.0.0
-faiss-cpu>=1.8.0
+# NLP & Vector Search (lightweight TF-IDF via scikit-learn)
 
 # Agent Orchestration & AI
 langgraph>=0.2.20

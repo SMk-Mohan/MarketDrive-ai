@@ -23,16 +23,11 @@ FILES_TO_SYNC = [
     RAG_DIR / "global_report.csv",
     RAG_DIR / "api_tracker.json",
     RAG_DIR / "training_data_tracker.csv",
-    # FAISS indexes (10 files: 5 stocks * 2 files)
-    RAG_DIR / "faiss_indexes/infosys_faiss.index",
+    # Pickle history rows (5 files: 5 stocks * 1 file)
     RAG_DIR / "faiss_indexes/infosys_rows.pkl",
-    RAG_DIR / "faiss_indexes/vodafone_faiss.index",
     RAG_DIR / "faiss_indexes/vodafone_rows.pkl",
-    RAG_DIR / "faiss_indexes/tata_faiss.index",
     RAG_DIR / "faiss_indexes/tata_rows.pkl",
-    RAG_DIR / "faiss_indexes/adani_faiss.index",
     RAG_DIR / "faiss_indexes/adani_rows.pkl",
-    RAG_DIR / "faiss_indexes/yesbank_faiss.index",
     RAG_DIR / "faiss_indexes/yesbank_rows.pkl",
 ]
 
