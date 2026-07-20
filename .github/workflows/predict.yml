@@ -16,8 +16,31 @@ jobs:
   trigger-prediction:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Backend Prediction
+      - name: Wake up Render backend (handles cold start)
         run: |
-          curl -X POST "${{ secrets.BACKEND_URL }}/predict/run-predictions" \
-          -H "Content-Type: application/json" \
-          --fail || exit 1
+          echo "Pinging backend to wake it up..."
+          curl --retry 5 \
+               --retry-delay 15 \
+               --retry-all-errors \
+               --max-time 60 \
+               -s -o /dev/null -w "%{http_code}" \
+               "${{ secrets.BACKEND_URL }}/health" || true
+          echo "Waiting 20 seconds for backend to fully start..."
+          sleep 20
+
+      - name: Trigger Backend Prediction Sweep
+        run: |
+          echo "Triggering prediction sweep..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+               --max-time 60 \
+               -X POST "${{ secrets.BACKEND_URL }}/predict/run-predictions" \
+               -H "Content-Type: application/json")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response code: $HTTP_CODE"
+          echo "Response body: $BODY"
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERROR: Backend returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          echo "Success! Prediction sweep started."
