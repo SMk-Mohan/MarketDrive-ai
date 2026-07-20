@@ -25,8 +25,8 @@ jobs:
                --max-time 60 \
                -s -o /dev/null -w "%{http_code}" \
                "${{ secrets.BACKEND_URL }}/health" || true
-          echo "Waiting 20 seconds for backend to fully start..."
-          sleep 20
+          echo "Waiting 50 seconds for backend to fully start..."
+          sleep 50
 
       - name: Trigger Backend Prediction Sweep
         run: |
