@@ -58,17 +58,26 @@ export default function OHLCChart({ data, mode, color = '#000' }) {
     let rafId = null
 
     const render = () => {
+      // Read layout size BEFORE touching canvas dimensions
       const W = canvas.offsetWidth
       const H = canvas.offsetHeight
       if (W === 0 || H === 0) return
-      canvas.width = W
-      canvas.height = H
+
+      // Only change canvas resolution if it actually changed
+      // (avoids triggering another ResizeObserver callback)
+      if (canvas.width !== W || canvas.height !== H) {
+        canvas.width = W
+        canvas.height = H
+      }
       const ctx = canvas.getContext('2d')
       mode === 'line' ? drawLine(ctx, data, W, H) : drawCandle(ctx, data, W, H)
     }
 
-    // Debounce via RAF to avoid ResizeObserver loop
-    const onResize = () => {
+    const onResize = (entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        if (width === 0 || height === 0) return
+      }
       if (rafId) cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(render)
     }

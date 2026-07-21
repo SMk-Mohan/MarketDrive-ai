@@ -297,7 +297,7 @@ def predict(company_name: str, live_features: dict) -> dict:
         "price_range_high": price_high,
         "reason":           reason,
         "top_features":     top_features,
-        "model_accuracy":   metadata["walk_forward_accuracy"],
+        "model_accuracy":   metadata.get("walk_forward_accuracy", metadata.get("walk_forward_f1", 0.0)),
         "model_trained_at": metadata["trained_at"],
         "timestamp":        datetime.now().isoformat(),
     }
