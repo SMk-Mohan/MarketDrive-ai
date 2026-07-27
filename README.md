@@ -1,4 +1,4 @@
-﻿# MarketDrive AI
+# MarketDrive AI
 > **Multi-Agent Financial Intelligence & Short-Term Equity Forecasting System**
 
 MarketDrive AI is an autonomous, multi-agent financial research system built for NSE (Indian Stock Market) top equities. It orchestrates 6 specialized AI agents using **LangGraph** to process technical market data, institutional news sentiment, machine learning feature importances, and risk management guidelines into actionable, explainable short-term predictions.
@@ -9,63 +9,7 @@ Live Demo → [market-drive-ai.vercel.app](https://market-drive-ai.vercel.app) �
 
 ## System Architecture & Agent Flow
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                     MarketDrive AI — Multi-Agent Pipeline                    │
-└──────────────────────────────────────────────────────────────────────────────┘
-
- User Request / Scheduled Cron (09:15 AM IST)
-             │
-             ▼
-  ┌─────────────────────┐
-  │  LangGraph           │  ← Stateful orchestration graph with conditional routing
-  │  Coordinator         │
-  └────────┬────────────┘
-           │
-     ┌─────┴──────────────────────────────────────────────────┐
-     │                                                        │
-     ▼                                                        │
-┌─────────────┐   structured JSON    ┌──────────────────────┐ │
-│  1. News     │──────────────────────▶  2. Market Agent     │ │
-│  Agent       │  (LLM sentiment,     │  (OHLCV + Technicals)│ │
-│              │   event tags,        └──────────┬───────────┘ │
-│  MarketAux   │   impact scores)                │             │
-│  + Groq LLM  │                                 ▼             │
-└─────────────┘                     ┌─────────────────────┐   │
-                                    │  3. Prediction Agent │   │
-                                    │  XGBoost + SHAP      │   │
-                                    │  Walk-Forward CV     │   │
-                                    └──────────┬──────────┘   │
-                                               │              │
-                                               ▼              │
-                                    ┌─────────────────────┐   │
-                                    │  4. Coordinator Node │◀──┘
-                                    │  Conflict Detection  │
-                                    │  Confidence Calibration│
-                                    └──────────┬──────────┘
-                                               │
-                             ┌─────────────────┴──────────────────┐
-                             │                                    │
-                             ▼                                    ▼
-                  ┌─────────────────┐                 ┌──────────────────┐
-                  │  5. Risk Agent  │                 │  6. RAG Agent    │
-                  │  ATR Corridors  │                 │  FAISS + Groq    │
-                  │  Volatility     │                 │  Analyst Prose   │
-                  │  Regime         │                 │  + Logging       │
-                  └────────┬────────┘                 └────────┬─────────┘
-                           │                                   │
-                           └─────────────────┬─────────────────┘
-                                             ▼
-                                  ┌─────────────────────┐
-                                  │  FastAPI REST Layer  │
-                                  │  + MongoDB Cache     │
-                                  └──────────┬──────────┘
-                                             ▼
-                                  ┌─────────────────────┐
-                                  │  React + Vite UI     │
-                                  │  Vercel Deployment   │
-                                  └─────────────────────┘
-```
+![MarketDrive AI — Multi-Agent Architecture](docs/assets/architecture-mono.svg)
 
 ---
 
