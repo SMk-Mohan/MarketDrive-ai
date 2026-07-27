@@ -16,10 +16,11 @@ const Hero = () => {
     height: isMobile ? 'auto' : '100vh', // Full viewport height
     width: '100vw',
     background: 'white',
-    padding: isMobile ? '80px 20px' : '0 10%',
+    padding: isMobile ? '80px 20px 100px 20px' : '0 10%',
     alignItems: 'center',
     fontFamily: "'Inter', sans-serif",
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    position: 'relative'
   };
 
   return (
@@ -84,6 +85,51 @@ const Hero = () => {
             mixBlendMode: 'multiply'
           }}
         />
+      </div>
+
+      {/* Interactive Scroll Down Indicator Pill */}
+      <div style={{
+        position: 'absolute',
+        bottom: '24px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10
+      }}>
+        <button
+          onClick={() => {
+            document.getElementById('stocks-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            background: '#000',
+            color: '#fff',
+            border: '1.5px solid #000',
+            borderRadius: '24px',
+            fontSize: '11px',
+            fontWeight: '800',
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+            transition: 'transform 0.2s ease, background-color 0.2s ease'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.background = '#222';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = '#000';
+          }}
+        >
+          <span>Explore Intelligence Feed</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
       </div>
     </div>
   );
