@@ -793,6 +793,75 @@ async def run_evaluation(actual_closes: dict | None = None) -> None:
         logger.error(f"  Archive error: {e}")
 
 
+def get_today_retraining_row(company: str, today_evaluated_row: dict) -> dict | None:
+    """
+    Constructs a clean training row for today using today's yfinance data 
+    and today's news/sentiment from the evaluation report.
+    """
+    from agents.market_agent import market_agent_v3
+    
+    try:
+        # Run market agent to get today's close, open, and technical indicators (RSI, MACD, EMAs)
+        market_res = market_agent_v3(company)
+        
+        # Determine actual target: Bullish (1), Bearish (-1), Neutral (0)
+        actual_dir = today_evaluated_row.get("actual_direction", "Neutral")
+        direction_map = {"Bearish": -1, "Neutral": 0, "Bullish": 1}
+        target_val = direction_map.get(actual_dir, 0)
+        
+        # Build training row matching FEATURE_COLUMNS + target + date + company + symbol
+        row = {
+            "date":               today_evaluated_row.get("date"),
+            "company":            company,
+            "symbol":             today_evaluated_row.get("symbol"),
+            
+            # Prices (OHLC)
+            "open":               market_res.get("open", 0.0),
+            "high":               market_res.get("high", 0.0),
+            "low":                market_res.get("low", 0.0),
+            "close":              market_res.get("close", 0.0),
+            
+            # Oscillators
+            "rsi":                market_res.get("rsi", 50.0),
+            "macd":               market_res.get("macd", 0.0),
+            "macd_signal":        market_res.get("macd_signal", 0.0),
+            "macd_histogram":     market_res.get("macd_histogram", 0.0),
+            
+            # Trend
+            "ema_20":             market_res.get("ema_20", 0.0),
+            "ema_50":             market_res.get("ema_50", 0.0),
+            "ema_200":            market_res.get("ema_200", 0.0),
+            
+            # Volatility & Volume
+            "atr":                market_res.get("atr", 0.0),
+            "atr_pct":            market_res.get("atr_pct", 0.0),
+            "volume_ratio":       market_res.get("volume_ratio", 1.0),
+            
+            # Derived
+            "trend_score":        market_res.get("trend_score", 0),
+            "price_vs_ema20":     market_res.get("price_vs_ema20", 0.0),
+            
+            # Macro
+            "nifty_trend":        market_res.get("nifty_trend", "Neutral"),
+            "banknifty_trend":    market_res.get("banknifty_trend", "Neutral"),
+            "sensex_trend":       market_res.get("sensex_trend", "Neutral"),
+            
+            # News/Sentiment (use actual logged values at prediction time)
+            "sentiment_score":    today_evaluated_row.get("sentiment_score_at_pred", 0.0),
+            "impact_score":       today_evaluated_row.get("impact_score_at_pred", 0.0),
+            "relevance_score":    today_evaluated_row.get("relevance_score_at_pred", 0.0),
+            "news_count":         today_evaluated_row.get("news_count_at_pred", 0),
+            "dominant_event":     today_evaluated_row.get("dominant_event_at_pred", "Other"),
+            
+            "trigger_count":      today_evaluated_row.get("trigger_count", 0),
+            "target":             target_val
+        }
+        return row
+    except Exception as e:
+        logger.error(f"Failed to construct retraining row for {company}: {e}")
+        return None
+
+
 async def run_retraining() -> None:
     """
     End-of-day retraining at 4:30 PM.
@@ -842,32 +911,46 @@ async def run_retraining() -> None:
             logger.info(f"  {company}: today's data already in training CSV")
             continue
 
-        training_df = pd.concat(
-            [training_df, new_rows[training_df.columns]],
-            ignore_index=True
-        )
+        # Align columns and construct today's clean row
+        rows_to_append = []
+        for _, row_dict in new_rows.iterrows():
+            today_row = get_today_retraining_row(company, row_dict)
+            if today_row:
+                rows_to_append.append(today_row)
+        
+        if not rows_to_append:
+            logger.warning(f"  {company}: could not construct any retraining rows today")
+            continue
+            
+        new_training_df = pd.DataFrame(rows_to_append)
+        training_df = pd.concat([training_df, new_training_df], ignore_index=True)
         training_df.to_csv(training_path, index=False)
 
         logger.info(
             f"  {company}: retraining on "
-            f"{len(training_df)} rows (+{len(new_rows)} new)..."
+            f"{len(training_df)} rows (+{len(rows_to_append)} new)..."
         )
 
         try:
             # FIX: train_model imported from prediction_agent
             metadata = train_model(company, training_path)
+            
+            accuracy = metadata.get("walk_forward_accuracy", metadata.get("walk_forward_f1", 0.0))
+            if accuracy <= 1.0:
+                accuracy = accuracy * 100
+                
             rag_agent("log_retraining", {
                 "stock":                 company,
                 "symbol":                symbol,
                 "training_rows_used":    len(training_df),
                 "date_range_start":      str(training_df["date"].min()),
                 "date_range_end":        str(training_df["date"].max()),
-                "walk_forward_accuracy": metadata["walk_forward_accuracy"],
-                "new_rows_added":        len(new_rows),
+                "walk_forward_accuracy": accuracy,
+                "new_rows_added":        len(rows_to_append),
             })
             logger.info(
                 f"  ✅ {company}: retrained | "
-                f"acc={metadata['walk_forward_accuracy']:.1f}%"
+                f"acc={accuracy:.1f}%"
             )
         except Exception as e:
             logger.error(f"  {company}: retraining failed: {e}")

@@ -1,8 +1,8 @@
 {
   "company": "infosys",
-  "trained_at": "2026-07-03T20:55:39.087571",
+  "trained_at": "2026-07-27T22:06:05.587405",
   "rows_trained_on": 745,
-  "walk_forward_f1": 0.294,
+  "walk_forward_f1": 0.4295,
   "feature_columns": [
     "open",
     "rsi",

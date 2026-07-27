@@ -120,6 +120,13 @@ def train_model(company_name: str, csv_path: str) -> dict:
     logger.info(f" TRAINING — {company_name.upper()}")
 
     df = load_training_csv(csv_path)
+
+    # Dynamically compute target based on intraday returns with 1.0% threshold
+    pct = (df["close"] - df["open"]) / df["open"]
+    df["target"] = 0
+    df.loc[pct > 0.01, "target"] = 1
+    df.loc[pct < -0.01, "target"] = -1
+
     df = encode_categoricals(df, company_name, fit=True)
     X  = df[FEATURE_COLUMNS]
     y  = df[TARGET_COLUMN].map(LABEL_MAP)

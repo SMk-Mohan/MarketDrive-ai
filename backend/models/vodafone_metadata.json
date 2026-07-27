@@ -1,8 +1,8 @@
 {
   "company": "vodafone",
-  "trained_at": "2026-07-03T20:55:43.029110",
+  "trained_at": "2026-07-27T22:06:11.957890",
   "rows_trained_on": 740,
-  "walk_forward_f1": 0.3276,
+  "walk_forward_f1": 0.4623,
   "feature_columns": [
     "open",
     "rsi",
