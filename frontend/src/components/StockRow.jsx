@@ -173,7 +173,7 @@ export default function StockRow({ stock, prediction, loading: isGlobalLoading, 
         )}
       </div>
 
-      <div style={{ flex: 1, padding: '10px', background: '#fafafa', minHeight: 0 }}>
+      <div style={{ flex: 1, padding: '10px', background: '#fafafa', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
         {isChartLoading
           ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '10px', color: '#ccc' }}>...</div>
           : <OHLCChart data={ohlc} mode="line" color="#000" />

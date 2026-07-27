@@ -49,22 +49,23 @@ function drawCandle(ctx, data, W, H) {
 }
 
 export default function OHLCChart({ data, mode, color = '#000' }) {
-  const ref = useRef(null)
+  const containerRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
-    const canvas = ref.current
-    if (!canvas || !data?.length) return
+    const container = containerRef.current
+    const canvas = canvasRef.current
+    if (!container || !canvas || !data?.length) return
 
     let rafId = null
 
     const render = () => {
-      // Read layout size BEFORE touching canvas dimensions
-      const W = canvas.offsetWidth
-      const H = canvas.offsetHeight
+      // Read parent layout size BEFORE touching canvas resolution
+      const W = container.clientWidth
+      const H = container.clientHeight
       if (W === 0 || H === 0) return
 
-      // Only change canvas resolution if it actually changed
-      // (avoids triggering another ResizeObserver callback)
+      // Only update resolution if changed (absolutely positioned canvas won't trigger parent resize)
       if (canvas.width !== W || canvas.height !== H) {
         canvas.width = W
         canvas.height = H
@@ -73,19 +74,13 @@ export default function OHLCChart({ data, mode, color = '#000' }) {
       mode === 'line' ? drawLine(ctx, data, W, H) : drawCandle(ctx, data, W, H)
     }
 
-    const onResize = (entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        if (width === 0 || height === 0) return
-      }
-      if (rafId) cancelAnimationFrame(rafId)
-      rafId = requestAnimationFrame(render)
-    }
-
     render()
 
-    const ro = new ResizeObserver(onResize)
-    ro.observe(canvas)
+    const ro = new ResizeObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(render)
+    })
+    ro.observe(container)
 
     return () => {
       ro.disconnect()
@@ -99,5 +94,9 @@ export default function OHLCChart({ data, mode, color = '#000' }) {
     </div>
   )
 
-  return <canvas ref={ref} style={{ width: '100%', height: '100%', display: 'block' }} />
+  return (
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }} />
+    </div>
+  )
 }
