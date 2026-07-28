@@ -138,13 +138,13 @@ GitHub Actions wakes up the Render backend during IST market hours (free tier sp
 
 ## Covered Stocks
 
-| Company | NSE Ticker |
-|---|---|
-| Infosys | INFY.NS |
-| Vodafone Idea | IDEA.NS |
-| Tata Motors | TATAMOTORS.NS |
-| Adani Enterprises | ADANIENT.NS |
-| Yes Bank | YESBANK.NS |
+| Company | NSE Ticker | Training Data Years | Reason for Training Window |
+|---|---|---|---|
+| Infosys | INFY.NS | Jan 2020 – Dec 2022 | Captures the COVID-19 crash & IT sector rebound (2020), the post-pandemic tech supercycle and INFY revenue beats (2021), and the global rate-hike-driven IT correction (2022). This 3-year window gives the model a full bull-bear cycle specific to large-cap Indian IT. |
+| Vodafone Idea | IDEA.NS | Jan 2019 – Dec 2021 | Covers the AGR dues crisis verdict (2019) that pushed IDEA to near-insolvency, the subsequent debt restructuring negotiations (2020), and the government equity conversion rescue (2021). This is the most structurally volatile period for the stock — the model learns extreme distress-driven intraday patterns. |
+| Tata Motors | TATAMOTORS.NS | Jan 2021 – Dec 2023 | Captures the global semiconductor chip shortage impact on JLR (2021), the EV pivot and Tata.ev brand launch momentum (2022), and the JLR order-book recovery and margin expansion cycle (2023). Avoids pre-COVID years where JLR losses dominated and the signal regime is unrepresentative of current business fundamentals. |
+| Adani Enterprises | ADANIENT.NS | Jan 2021 – Dec 2023 | Covers the flagship FPO run-up and the Hindenburg Research short-seller attack crash (Jan 2023) — the single largest intraday volatility event in Adani's history. Including this period forces the model to learn high-conviction reversal and panic-selling patterns. Pre-2021 data has low liquidity and thin volume, making technical signals unreliable. |
+| Yes Bank | YESBANK.NS | Jan 2018 – Dec 2020 | Covers the RBI-forced CEO removal and governance collapse (2018–2019), the moratorium freeze and SBI-led rescue restructuring (March 2020), and the post-bailout stabilisation. This is the only window where Yes Bank exhibits meaningful directional intraday movement; post-2020 the stock trades in a compressed ₹12–25 band with low signal-to-noise. |
 
 ---
 
